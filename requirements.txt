@@ -1,0 +1,13 @@
+PyQt5>=5.15.0
+PyQtWebEngine>=5.15.0
+pandas>=1.3.0
+numpy>=1.21.0
+scikit-learn>=1.0.0
+openpyxl>=3.0.9
+xlrd>=2.0.1
+plotly>=5.10.0
+networkx>=2.8
+jinja2>=3.0.0
+fuzzywuzzy>=0.18.0
+python-Levenshtein>=0.12.2
+# kaleido>=0.2.1 (Не ставьте, если у вас Python 3.12+; без него графики сохраняются как интерактивные ссылки)
