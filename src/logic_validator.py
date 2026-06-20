@@ -13,7 +13,16 @@ class LogicValidator:
         if 'счет_кредит' not in df.columns:
             df['счет_кредит'] = df['кредит'].astype(str).str.split('.').str[0]
 
-        # Создаём маски для каждого условия (векторизовано)
+        # --- Проверка на дублирующие проводки ---
+        # Создаём временную колонку с датой без времени (по дням)
+        date_day = df['дата'].dt.date
+        # Маска дубликатов (все строки, входящие в дублирующие группы)
+        duplicates_mask = df.duplicated(
+            subset=['дебет', 'кредит', 'сумма', date_day],
+            keep=False
+        )
+
+        # --- Базовые логические маски (остальные проверки) ---
         mask_sum = df['сумма'] <= 0
         mask_date = pd.isna(df['дата'])
         mask_desc = df['описание'].isna() | (df['описание'].astype(str).str.strip() == '')
@@ -21,8 +30,9 @@ class LogicValidator:
         mask_same = (df['счет_дебет'] == df['счет_кредит']) & (df['дебет'] > 0) & (df['кредит'] > 0)
         mask_one_side = ((df['дебет'] > 0) & (df['кредит'] == 0)) | ((df['дебет'] == 0) & (df['кредит'] > 0))
 
-        # Объединяем все маски
-        any_error = mask_sum | mask_date | mask_desc | mask_zero | mask_same | mask_one_side
+        # Объединяем все маски (включая дубликаты)
+        any_error = mask_sum | mask_date | mask_desc | mask_zero | mask_same | mask_one_side | duplicates_mask
+
         error_indices = any_error[any_error].index
 
         errors = []
@@ -41,6 +51,8 @@ class LogicValidator:
                 err_desc.append("Дебетовый и кредитовый счета совпадают")
             if mask_one_side[idx]:
                 err_desc.append("Односторонняя проводка (только дебет или только кредит)")
+            if duplicates_mask[idx]:
+                err_desc.append("Дублирующая проводка (одинаковые дебет, кредит, сумма, дата)")
 
             errors.append({
                 'Индекс': idx,
