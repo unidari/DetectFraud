@@ -23,6 +23,14 @@ from materiality import MaterialityEstimator
 from graph_builder import GraphBuilder
 from report_generator import ReportGenerator
 
+try:
+    from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
+    WEBENGINE_AVAILABLE = True
+except ImportError:
+    WEBENGINE_AVAILABLE = False
+    QWebEngineView = None
+    QWebEngineSettings = Nonepython
+
 class AnalysisThread(QThread):
     """Поток для выполнения анализа без блокировки интерфейса"""
     finished = pyqtSignal(object, object, object, object, object)  # df, scores, logic_df, mat_info, graph_fig

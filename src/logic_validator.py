@@ -15,10 +15,9 @@ class LogicValidator:
 
         # --- Проверка на дублирующие проводки ---
         # Создаём временную колонку с датой без времени (по дням)
-        date_day = df['дата'].dt.date
-        # Маска дубликатов (все строки, входящие в дублирующие группы)
+        df['date_day'] = df['дата'].dt.date
         duplicates_mask = df.duplicated(
-            subset=['дебет', 'кредит', 'сумма', date_day],
+            subset=['дебет', 'кредит', 'сумма', 'date_day'],
             keep=False
         )
 
