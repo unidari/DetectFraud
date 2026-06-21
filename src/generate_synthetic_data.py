@@ -14,8 +14,6 @@ import random
 NUM_ROWS = 1000                     # количество проводок
 OUTPUT_FILE = "synthetic_transactions.xlsx"
 SEED = 42                           # для воспроизводимости
-random.seed(SEED)
-np.random.seed(SEED)
 
 # Определим типы счетов (активные/пассивные)
 # Формат: номер счёта -> тип
@@ -85,93 +83,180 @@ DESCRIPTIONS = [
     "Внесение в уставный капитал",
 ]
 
-# Генерация проводок
-data = []
-for _ in range(NUM_ROWS):
-    # Выбираем случайный дебетовый и кредитовый счёт (разные)
-    debit_acc = random.choice(ACCOUNTS)
-    credit_acc = random.choice(ACCOUNTS)
-    while credit_acc == debit_acc:
+
+def generate_labeled_data(n_rows=NUM_ROWS, seed=SEED):
+    """
+    Генерирует DataFrame с колонкой 'true_anomaly' для валидации.
+    Возвращает pd.DataFrame с метками аномалий (True – аномалия, False – норма).
+    """
+    random.seed(seed)
+    np.random.seed(seed)
+
+    data = []
+    labels = []  # список булевых меток
+
+    for _ in range(n_rows):
+        debit_acc = random.choice(ACCOUNTS)
         credit_acc = random.choice(ACCOUNTS)
+        while credit_acc == debit_acc:
+            credit_acc = random.choice(ACCOUNTS)
 
-    # Сумма (логарифмическое распределение, чтобы были мелкие и крупные)
-    amount = np.random.lognormal(mean=6, sigma=2)  # среднее ~ 1000
-    amount = round(amount, 2)
+        amount = round(np.random.lognormal(mean=6, sigma=2), 2)
 
-    # С вероятностью 10% делаем одностороннюю проводку (только дебет или кредит)
-    if random.random() < 0.1:
-        if random.random() < 0.5:
-            credit_acc = None
-            amount = round(np.random.lognormal(mean=6, sigma=2), 2)
-        else:
-            debit_acc = None
-            amount = round(np.random.lognormal(mean=6, sigma=2), 2)
+        is_one_sided = False
+        if random.random() < 0.1:
+            is_one_sided = True
+            if random.random() < 0.5:
+                credit_acc = None
+                amount = round(np.random.lognormal(mean=6, sigma=2), 2)
+            else:
+                debit_acc = None
+                amount = round(np.random.lognormal(mean=6, sigma=2), 2)
 
-    # Дата
-    date = random_date()
-    # Описание
-    desc = random.choice(DESCRIPTIONS)
+        date = random_date()
+        desc = random.choice(DESCRIPTIONS)
 
-    # Заполняем строку
-    row = {
-        'Дебет': debit_acc if debit_acc else '',
-        'Кредит': credit_acc if credit_acc else '',
-        'Дата': date.strftime('%Y-%m-%d'),
-        'Описание': desc,
-        'Сумма': amount if debit_acc and credit_acc else (amount if debit_acc else 0) # для удобства
-    }
-    data.append(row)
+        row = {
+            'Дебет': debit_acc if debit_acc else '',
+            'Кредит': credit_acc if credit_acc else '',
+            'Дата': date.strftime('%Y-%m-%d'),
+            'Описание': desc,
+            'Сумма': amount if debit_acc and credit_acc else (amount if debit_acc else 0)
+        }
+        data.append(row)
+        # Метка: аномалия, если односторонняя (is_one_sided), позже добавим другие аномалии
+        labels.append(is_one_sided)
 
-# Преобразуем в DataFrame
-df = pd.DataFrame(data)
+    df = pd.DataFrame(data)
 
-# Добавим специальные аномалии
-# 1. Отрицательная сумма (редко)
-anomaly_idx = random.sample(range(len(df)), 10)
-for idx in anomaly_idx:
-    df.loc[idx, 'Сумма'] = -abs(df.loc[idx, 'Сумма']) * 0.5
+    # Добавим специальные аномалии (как в оригинале) и обновим метки
+    # 1. Отрицательная сумма (10 записей)
+    anomaly_idx = random.sample(range(len(df)), 10)
+    for idx in anomaly_idx:
+        df.loc[idx, 'Сумма'] = -abs(df.loc[idx, 'Сумма']) * 0.5
+        labels[idx] = True
 
-# 2. Нулевая сумма (5 записей)
-zero_indices = random.sample(range(len(df)), 5)
-for idx in zero_indices:
-    df.loc[idx, 'Сумма'] = 0
+    # 2. Нулевая сумма (5)
+    zero_indices = random.sample(range(len(df)), 5)
+    for idx in zero_indices:
+        df.loc[idx, 'Сумма'] = 0
+        labels[idx] = True
 
-# 3. Отсутствие описания (10 записей)
-no_desc_indices = random.sample(range(len(df)), 10)
-for idx in no_desc_indices:
-    df.loc[idx, 'Описание'] = ''
+    # 3. Отсутствие описания (10)
+    no_desc_indices = random.sample(range(len(df)), 10)
+    for idx in no_desc_indices:
+        df.loc[idx, 'Описание'] = ''
+        labels[idx] = True
 
-# 4. Некорректная дата (5 записей) – поставим NaT
-bad_date_indices = random.sample(range(len(df)), 5)
-for idx in bad_date_indices:
-    df.loc[idx, 'Дата'] = 'неверная дата'
+    # 4. Некорректная дата (5)
+    bad_date_indices = random.sample(range(len(df)), 5)
+    for idx in bad_date_indices:
+        df.loc[idx, 'Дата'] = 'неверная дата'
+        labels[idx] = True
 
-# 5. Дебет и кредит одинаковый счёт (5 записей)
-same_account_indices = random.sample(range(len(df)), 5)
-for idx in same_account_indices:
-    acc = random.choice(ACCOUNTS)
-    df.loc[idx, 'Дебет'] = acc
-    df.loc[idx, 'Кредит'] = acc
+    # 5. Дебет и кредит одинаковый счёт (5)
+    same_account_indices = random.sample(range(len(df)), 5)
+    for idx in same_account_indices:
+        acc = random.choice(ACCOUNTS)
+        df.loc[idx, 'Дебет'] = acc
+        df.loc[idx, 'Кредит'] = acc
+        labels[idx] = True
 
-# 6. Нарушение остатков: сделаем так, чтобы по некоторым активным счетам было кредитовое сальдо
-# Для этого добавим несколько проводок с большим кредитом на активном счёте
-active_accounts = [acc for acc in ACCOUNTS if get_account_type(acc) == 'active']
-for _ in range(5):
-    acc = random.choice(active_accounts)
-    # Добавим проводку, где этот счёт кредитуется на крупную сумму, а дебетуется на другую
-    new_row = {
-        'Дебет': random.choice([a for a in ACCOUNTS if a != acc]),
-        'Кредит': acc,
-        'Дата': random_date().strftime('%Y-%m-%d'),
-        'Описание': 'Аномальная проводка (нарушение сальдо)',
-        'Сумма': round(np.random.lognormal(mean=8, sigma=2), 2)  # крупная сумма
-    }
-    # Заменяем df.append() на pd.concat()
-    df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+    # 6. Нарушение остатков (добавляем 5 новых строк)
+    active_accounts = [acc for acc in ACCOUNTS if get_account_type(acc) == 'active']
+    for _ in range(5):
+        acc = random.choice(active_accounts)
+        new_row = {
+            'Дебет': random.choice([a for a in ACCOUNTS if a != acc]),
+            'Кредит': acc,
+            'Дата': random_date().strftime('%Y-%m-%d'),
+            'Описание': 'Аномальная проводка (нарушение сальдо)',
+            'Сумма': round(np.random.lognormal(mean=8, sigma=2), 2)
+        }
+        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+        labels.append(True)  # эти строки тоже аномальны
 
-# Сохраняем в Excel
-df.to_excel(OUTPUT_FILE, index=False)
-print(f"Сгенерировано {len(df)} проводок. Файл сохранён: {OUTPUT_FILE}")
-print("Колонки:", df.columns.tolist())
-print("Пример первых 5 строк:")
-print(df.head())
+    # Добавляем колонку с метками
+    df['true_anomaly'] = labels
+    return df
+
+
+if __name__ == "__main__":
+    # Устанавливаем seed для воспроизводимости при запуске скрипта
+    random.seed(SEED)
+    np.random.seed(SEED)
+
+    # Генерация проводок (основной поток)
+    data = []
+    for _ in range(NUM_ROWS):
+        debit_acc = random.choice(ACCOUNTS)
+        credit_acc = random.choice(ACCOUNTS)
+        while credit_acc == debit_acc:
+            credit_acc = random.choice(ACCOUNTS)
+
+        amount = np.random.lognormal(mean=6, sigma=2)
+        amount = round(amount, 2)
+
+        if random.random() < 0.1:
+            if random.random() < 0.5:
+                credit_acc = None
+                amount = round(np.random.lognormal(mean=6, sigma=2), 2)
+            else:
+                debit_acc = None
+                amount = round(np.random.lognormal(mean=6, sigma=2), 2)
+
+        date = random_date()
+        desc = random.choice(DESCRIPTIONS)
+
+        row = {
+            'Дебет': debit_acc if debit_acc else '',
+            'Кредит': credit_acc if credit_acc else '',
+            'Дата': date.strftime('%Y-%m-%d'),
+            'Описание': desc,
+            'Сумма': amount if debit_acc and credit_acc else (amount if debit_acc else 0)
+        }
+        data.append(row)
+
+    df = pd.DataFrame(data)
+
+    # Добавляем специальные аномалии (те же, что и в generate_labeled_data)
+    anomaly_idx = random.sample(range(len(df)), 10)
+    for idx in anomaly_idx:
+        df.loc[idx, 'Сумма'] = -abs(df.loc[idx, 'Сумма']) * 0.5
+
+    zero_indices = random.sample(range(len(df)), 5)
+    for idx in zero_indices:
+        df.loc[idx, 'Сумма'] = 0
+
+    no_desc_indices = random.sample(range(len(df)), 10)
+    for idx in no_desc_indices:
+        df.loc[idx, 'Описание'] = ''
+
+    bad_date_indices = random.sample(range(len(df)), 5)
+    for idx in bad_date_indices:
+        df.loc[idx, 'Дата'] = 'неверная дата'
+
+    same_account_indices = random.sample(range(len(df)), 5)
+    for idx in same_account_indices:
+        acc = random.choice(ACCOUNTS)
+        df.loc[idx, 'Дебет'] = acc
+        df.loc[idx, 'Кредит'] = acc
+
+    active_accounts = [acc for acc in ACCOUNTS if get_account_type(acc) == 'active']
+    for _ in range(5):
+        acc = random.choice(active_accounts)
+        new_row = {
+            'Дебет': random.choice([a for a in ACCOUNTS if a != acc]),
+            'Кредит': acc,
+            'Дата': random_date().strftime('%Y-%m-%d'),
+            'Описание': 'Аномальная проводка (нарушение сальдо)',
+            'Сумма': round(np.random.lognormal(mean=8, sigma=2), 2)
+        }
+        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+
+    # Сохраняем в Excel
+    df.to_excel(OUTPUT_FILE, index=False)
+    print(f"Сгенерировано {len(df)} проводок. Файл сохранён: {OUTPUT_FILE}")
+    print("Колонки:", df.columns.tolist())
+    print("Пример первых 5 строк:")
+    print(df.head())

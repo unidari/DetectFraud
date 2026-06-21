@@ -4,7 +4,30 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7be57894-a9c5-430f-84e8-935af071cb45" name="Changes" comment="" />
+    <list default="true" id="7be57894-a9c5-430f-84e8-935af071cb45" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.github/workflows/ci.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pytest.ini" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/synthetic_transactions.xlsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/acceptance/test_scenarios.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/conftest.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/integration/test_integration_validation.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/integration/test_pipeline.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/performance/test_load.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/system/test_gui.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/unit/test_anomaly_detector.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/unit/test_data_loader.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/unit/test_feature_extractor.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/unit/test_graph_builder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/unit/test_logic_validator.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/unit/test_materiality.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/unit/test_report_generator.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/unit/test_utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/validation/test_metrics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/generate_synthetic_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/generate_synthetic_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/synthetic_transactions.xlsx" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -17,6 +40,21 @@
       </list>
     </option>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "unidari"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/unidari/DetectFraud.git",
+    "accountId": "9ca413b6-9184-4b0a-a8db-5bfe70f14be4"
+  }
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
 }</component>
@@ -31,6 +69,7 @@
     "Python.generate_synthetic_data.executor": "Run",
     "Python.main.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
     "last_opened_file_path": "C:/Users/user/Desktop/DetectFraud_3_1-master",
     "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings"
   }
@@ -81,5 +120,8 @@
       <updated>1781697546142</updated>
     </task>
     <servers />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.ini" />
   </component>
 </project>
