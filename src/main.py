@@ -29,7 +29,7 @@ try:
 except ImportError:
     WEBENGINE_AVAILABLE = False
     QWebEngineView = None
-    QWebEngineSettings = Nonepython
+    QWebEngineSettings = None
 
 class AnalysisThread(QThread):
     """Поток для выполнения анализа без блокировки интерфейса"""
