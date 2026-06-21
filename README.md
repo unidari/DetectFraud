@@ -1,6 +1,11 @@
 # 🔍 DetectFraud – выявление аномалий в бухгалтерских проводках
 
 [![Python](https://img.shields.io/badge/Python-3.12%2B-blue)](https://www.python.org/)
+![Pandas](https://img.shields.io/badge/pandas-150458?style=flat&logo=pandas&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=flat&logo=scikit-learn&logoColor=white)
+![Qt](https://img.shields.io/badge/Qt-41CD52?style=flat&logo=qt&logoColor=white)
+![Plotly](https://img.shields.io/badge/Plotly-3F4F75?style=flat&logo=plotly&logoColor=white)
+![Read the Docs](https://img.shields.io/readthedocs/detecred-fraud)
 
 **DetectFraud** – инструмент для автоматизированного обнаружения подозрительных операций и аномалий в бухгалтерских проводках с использованием методов машинного обучения, логического контроля и графового анализа.
 
